@@ -19,6 +19,9 @@ def _extract_text_sample(file_path: str) -> str:
     ext = Path(file_path).suffix.lower()
     if ext == ".pdf":
         with pdfplumber.open(file_path) as pdf:
+            print(f"Extracting text sample from PDF: {file_path}")
+            print(f"Number of pages in PDF: {len(pdf.pages)}")
+            print(f"Extracted text from first page: {(pdf.pages[0].extract_text() or '')[:500]}")  # Print first 500 chars
             return (pdf.pages[0].extract_text() or "") if pdf.pages else ""
     elif ext in (".csv", ".xlsx"):
         with open(file_path, "rb") as f:
