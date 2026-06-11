@@ -5,16 +5,21 @@ function getApiBase(): string {
 }
 const API_BASE = getApiBase();
 
+console.log(`API Base URL: ${API_BASE}`);
+
 export async function analyzeStatement(file: File): Promise<Blob> {
   const form = new FormData();
   form.append("file", file);
 
   const res = await fetch(`${API_BASE}/api/analyze`, { method: "POST", body: form });
 
+  console.log("api resp", res);  
+
   if (!res.ok) {
     let msg = `Server error ${res.status}`;
     try {
       const json = await res.json();
+      console.log("JSON response:", json);
       msg = json.detail ?? msg;
     } catch {
       // ignore parse error

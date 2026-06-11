@@ -15,10 +15,14 @@ ALLOWED_EXTENSIONS = {".pdf", ".csv", ".xlsx", ".xls"}
 @router.post("/analyze")
 async def analyze_statement(file: UploadFile = File(...)):
     ext = Path(file.filename or "").suffix.lower()
+    print(f"Received file: {file.filename}, extension: {ext}")
+
     if ext not in ALLOWED_EXTENSIONS:
         raise HTTPException(400, f"Unsupported file type '{ext}'. Upload a PDF, CSV, or Excel file.")
 
     content = await file.read()
+    print(f"File content length: {len(content)}")
+    
     if len(content) > settings.max_upload_bytes:
         raise HTTPException(413, f"File exceeds {settings.MAX_UPLOAD_SIZE_MB}MB limit.")
     if not content:
@@ -27,6 +31,8 @@ async def analyze_statement(file: UploadFile = File(...)):
     with tempfile.NamedTemporaryFile(delete=False, suffix=ext) as tmp:
         tmp.write(content)
         tmp_path = tmp.name
+
+    print(f"Saved uploaded file to temporary path: {tmp_path}")
 
     try:
         transactions = await process_statement(tmp_path)
@@ -42,6 +48,8 @@ async def analyze_statement(file: UploadFile = File(...)):
     excel_bytes = build_excel(transactions)
     stem = Path(file.filename or "statement").stem
     download_name = f"{stem}_categorized.xlsx"
+
+    print(f"Generated Excel file for download: {download_name}, size: {len(excel_bytes)} bytes")
 
     return Response(
         content=excel_bytes,
