@@ -37,21 +37,27 @@ class BaseParser(ABC):
 
     @staticmethod
     def _normalize_merchant(raw: str) -> str:
-        """Strip location suffixes, numbers, and normalize whitespace."""
+        """Strip location/noise tokens and return up to 3 meaningful words."""
         upper = raw.upper().strip()
-        # Remove common location noise
-        patterns = [
-            r"\b(BANGALORE|MUMBAI|DELHI|CHENNAI|HYDERABAD|KOLKATA|PUNE|INDIA|IN)\b",
-            r"\b\d{4,}\b",
-            r"[*#@/\\|]",
-        ]
-        for p in patterns:
-            upper = re.sub(p, " ", upper)
+        # Remove URL prefixes
+        upper = re.sub(r"\bWWW\b", " ", upper)
+        # Remove city/location names
+        upper = re.sub(
+            r"\b(BANGALORE|BENGALURU|MUMBAI|DELHI|NEW DELHI|CHENNAI|HYDERABAD|"
+            r"KOLKATA|PUNE|GURGAON|NOIDA|GURUGRAM|INDIA|CENTRAL DE)\b",
+            " ", upper,
+        )
+        # Remove standalone location abbreviation IN (not brand names like INDIGO)
+        upper = re.sub(r"(?<![A-Z])\bIN\b(?![A-Z])", " ", upper)
+        # Remove long reference numbers (4+ digits)
+        upper = re.sub(r"\b\d{4,}\b", " ", upper)
+        # Remove special characters
+        upper = re.sub(r"[*#@/\\|()\[\]]", " ", upper)
         # Collapse whitespace
         upper = re.sub(r"\s+", " ", upper).strip()
-        # Extract primary brand token (first 1-3 meaningful words)
+        # Return up to 3 meaningful tokens (len > 2, not purely numeric)
         tokens = [t for t in upper.split() if len(t) > 2 and not t.isdigit()]
-        return tokens[0] if tokens else upper
+        return " ".join(tokens[:3]) if tokens else upper
 
     @staticmethod
     def _parse_date(value: str, formats: list[str]) -> Optional[date]:
