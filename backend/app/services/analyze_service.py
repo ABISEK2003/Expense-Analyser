@@ -71,6 +71,39 @@ def _rule_category(merchant: str) -> str | None:
     return None
 
 
+async def _groq_category(merchant: str) -> str:
+    prompt = f"""Classify this Indian merchant/transaction into ONE category from this list:
+{json.dumps(VALID_CATEGORIES)}
+
+Merchant: "{merchant}"
+
+Reply with ONLY valid JSON: {{"category": "..."}}"""
+
+    try:
+        async with httpx.AsyncClient(timeout=30) as client:
+            resp = await client.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {settings.GROQ_API_KEY}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "model": settings.GROQ_MODEL,
+                    "messages": [{"role": "user", "content": prompt}],
+                    "temperature": 0,
+                    "max_tokens": 50,
+                    "response_format": {"type": "json_object"},
+                },
+            )
+            resp.raise_for_status()
+            content = resp.json()["choices"][0]["message"]["content"]
+            cat = json.loads(content).get("category", "Others")
+            return cat if cat in VALID_CATEGORIES else "Others"
+    except Exception as e:
+        logger.warning(f"Groq categorization failed for '{merchant}': {e}")
+        return "Others"
+
+
 async def _ollama_category(merchant: str) -> str:
     prompt = f"""Classify this Indian merchant into ONE category from this list:
 {json.dumps(VALID_CATEGORIES)}
@@ -96,14 +129,21 @@ Reply with ONLY valid JSON: {{"category": "..."}}"""
     return "Others"
 
 
-# In-memory cache so repeated merchants in the same upload don't re-call Ollama
+# In-memory cache so repeated merchants in the same upload don't hit the AI twice
 _session_cache: dict[str, str] = {}
 
 
 async def categorize(merchant: str) -> str:
     if merchant in _session_cache:
         return _session_cache[merchant]
-    cat = _rule_category(merchant) or await _ollama_category(merchant)
+    rule = _rule_category(merchant)
+    if rule:
+        _session_cache[merchant] = rule
+        return rule
+    if settings.GROQ_API_KEY:
+        cat = await _groq_category(merchant)
+    else:
+        cat = await _ollama_category(merchant)
     _session_cache[merchant] = cat
     return cat
 

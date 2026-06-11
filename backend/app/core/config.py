@@ -8,6 +8,11 @@ class Settings(BaseSettings):
     APP_NAME: str = "Expense Intelligence"
     DEBUG: bool = False
 
+    # Groq (cloud) — set this for production deployment
+    GROQ_API_KEY: str = ""
+    GROQ_MODEL: str = "llama-3.1-8b-instant"
+
+    # Ollama (local) — used when GROQ_API_KEY is not set
     OLLAMA_BASE_URL: str = "http://host.docker.internal:11434"
     OLLAMA_PRIMARY_MODEL: str = "qwen3:8b"
     OLLAMA_FALLBACK_MODEL: str = "qwen3:4b"

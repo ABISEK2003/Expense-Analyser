@@ -301,6 +301,62 @@ sudo usermod -aG docker $USER
 
 ---
 
+## Deploying to the Internet (Free)
+
+You can make the app accessible from anywhere using **Groq** (free AI) + **Render** (free backend) + **Vercel** (free frontend).
+
+### Step 1 — Get a Groq API Key (free)
+
+1. Go to [console.groq.com](https://console.groq.com) and sign up
+2. Click **API Keys** → **Create API Key**
+3. Copy the key (starts with `gsk_...`)
+
+### Step 2 — Deploy backend on Render
+
+1. Push your code to GitHub (if not done yet):
+   ```bash
+   git add .
+   git commit -m "add deployment config"
+   git push
+   ```
+
+2. Go to [render.com](https://render.com) → **New** → **Web Service**
+3. Connect your GitHub repo
+4. Render will auto-detect `render.yaml` and configure everything
+5. In the **Environment** tab, add:
+   - Key: `GROQ_API_KEY` → Value: your key from Step 1
+6. Click **Deploy** — wait ~5 minutes
+7. Copy your Render URL: `https://expense-intelligence-backend.onrender.com`
+
+> **Free tier note:** Render free services sleep after 15 minutes of inactivity. The first request after sleeping takes ~30 seconds to wake up.
+
+### Step 3 — Deploy frontend on Vercel
+
+1. Go to [vercel.com](https://vercel.com) → **New Project**
+2. Import your GitHub repo
+3. Set **Root Directory** to `frontend`
+4. Add environment variable:
+   - Key: `NEXT_PUBLIC_API_URL` → Value: your Render URL from Step 2 (e.g. `https://expense-intelligence-backend.onrender.com`)
+5. Click **Deploy** — wait ~2 minutes
+6. Your app is live at `https://your-app.vercel.app`
+
+### Architecture (deployed)
+
+```
+User browser
+     │
+     ▼
+Vercel (frontend)          ← yourapp.vercel.app
+     │  NEXT_PUBLIC_API_URL
+     ▼
+Render (backend API)       ← yourapp.onrender.com
+     │  GROQ_API_KEY
+     ▼
+Groq API (AI)              ← api.groq.com (free tier)
+```
+
+---
+
 ## Access from Other Devices (Same Network)
 
 Find your machine's IP:
