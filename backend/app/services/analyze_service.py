@@ -42,13 +42,18 @@ MERCHANT_RULES: dict[str, str] = {
     "ZERODHA": "Investments", "GROWW": "Investments", "UPSTOX": "Investments",
     "KUVERA": "Investments", "PAYTM MONEY": "Investments",
     "EMI": "EMI / Loans", "LOAN": "EMI / Loans", "BAJAJ FINANCE": "EMI / Loans",
+    "CGST": "Taxes & Charges", "SGST": "Taxes & Charges", "IGST": "Taxes & Charges",
+    "PETRO SURCHARGE": "Taxes & Charges", "SURCHARGE WAIVER": "Taxes & Charges",
+    "FCY MARKUP": "Taxes & Charges", "MARKUP FEE": "Taxes & Charges",
+    "LATE PAYMENT": "Taxes & Charges", "FINANCE CHARGE": "Taxes & Charges",
+    "CONSOLIDATED": "Taxes & Charges",
 }
 
 VALID_CATEGORIES = [
     "Food & Dining", "Groceries", "Shopping", "Fuel", "Travel",
     "Bills & Utilities", "Entertainment", "Healthcare", "Education",
     "Investments", "EMI / Loans", "ATM Withdrawal", "Subscriptions",
-    "Insurance", "Others",
+    "Insurance", "Taxes & Charges", "Others",
 ]
 
 

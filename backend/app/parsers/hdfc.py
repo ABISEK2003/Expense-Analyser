@@ -80,8 +80,6 @@ class HDFCParser(BaseParser):
             if not txn_date:
                 continue
             desc = m.group(2).strip()
-            if re.search(r"\b(CGST|SGST|IGST)", desc, re.IGNORECASE):
-                continue
             amount = self._clean_amount(m.group(4))
             if amount <= 0:
                 continue
@@ -114,9 +112,6 @@ class HDFCParser(BaseParser):
                 continue
             # Skip known summary/header phrases
             if _SUMMARY_RE.search(desc):
-                continue
-            # Skip GST lines
-            if re.search(r"\b(CGST|SGST|IGST)", desc, re.IGNORECASE):
                 continue
             amount = self._clean_amount(m.group(3))
             if amount <= 0:
