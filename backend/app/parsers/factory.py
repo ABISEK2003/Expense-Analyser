@@ -1,13 +1,18 @@
 from pathlib import Path
+
 import pdfplumber
 from loguru import logger
+
 from app.parsers.base import BaseParser, RawTransaction
+from app.parsers.bob import BankOfBarodaParser
+from app.parsers.generic import GenericStatementParser
 from app.parsers.hdfc import HDFCParser
 from app.parsers.icici import ICICIParser
 from app.parsers.sbi import SBIParser
 from app.parsers.axis import AxisParser
 
 PARSERS: list[BaseParser] = [
+    BankOfBarodaParser(),
     HDFCParser(),
     ICICIParser(),
     SBIParser(),
@@ -37,8 +42,8 @@ def get_parser(file_path: str) -> tuple[BaseParser, str]:
             logger.info(f"Auto-selected parser: {parser.BANK_NAME} for {file_path}")
             return parser, parser.BANK_NAME
 
-    logger.warning(f"No specific parser matched for {file_path}, using generic CSV/XLSX fallback")
-    return HDFCParser(), "Unknown"
+    logger.warning(f"No specific parser matched for {file_path}, using generic fallback parser")
+    return GenericStatementParser(), GenericStatementParser.BANK_NAME
 
 
 def parse_statement(file_path: str) -> tuple[list[RawTransaction], str]:
